@@ -1,4 +1,3 @@
-import nose
 from utils import float_equal
 from json_parser import *
 
@@ -114,7 +113,7 @@ def test_lexer_input_minus_int_number():
 def test_lexer_input_scientific_enumeration():
     i = '1e4'
     r = lexer(i)
-    assert float_equal(1 * 10**4, r[0])
+    assert float_equal(1 * 10 ** 4, r[0])
 
 
 def test_lexer_input_float():
@@ -126,7 +125,7 @@ def test_lexer_input_float():
 def test_lexer_input_float_scientific_enumeration():
     i = '4.2e5'
     r = lexer(i)
-    assert float_equal(4.2 * 10**5, r[0])
+    assert float_equal(4.2 * 10 ** 5, r[0])
 
 
 def test_lexer_input_error_float():
@@ -139,6 +138,61 @@ def test_lexer_input_error_float():
         assert False, "no exception raised while except ValueError"
 
 
+def test_json_obj_single_elem():
+    i = '42'
+    r = loads(i)
+    assert r == 42
+
+
+def test_json_obj_void_list():
+    i = '[]'
+    r = loads(i)
+    assert r == []
+
+
+def test_json_obj_multiple_elements_list():
+    i = '[1,1.2,"fuck"]'
+    r = loads(i)
+    assert r == [1, 1.2, "fuck"]
+
+
+def test_json_obj_multiple_list():
+    i = '[[1], 2]'
+    r = loads(i)
+    assert r == [[1], 2]
+
+
+def test_json_obj_void_dict():
+    i = '{}'
+    r = loads(i)
+    assert r == {}
+
+
+def test_json_obj_void_dict_list():
+    i = '{"": []}'
+    r = loads(i)
+    assert r == {"": []}
+
+
+def test_json_obj_void_list_dict():
+    i = '[{}]'
+    r = loads(i)
+    assert r == [{}]
+
+
+def test_json_obj_multiple_elements_dict():
+    i = '[{"hello": "world", "xiaoming": 14, "hehe": {"a": "b"}}, 1, {}, 2, 3, 4, {"oh": ["hei", {}]}]'
+    r = loads(i)
+    expect = [{'hehe': {'a': 'b'}, 'hello': 'world', 'xiaoming': 14},
+              1,
+              {},
+              2,
+              3,
+              4,
+              {'oh': ['hei', {}]}]
+    assert r == expect
+
+
 # integration test
 
 def test_lexer_multiple_int_element():
@@ -146,4 +200,3 @@ def test_lexer_multiple_int_element():
     r = lexer(i)
     print(r)
     assert r == ["[", 12, False, True, None, "{", "world", ":", 42, "}", "hello", "]"]
-

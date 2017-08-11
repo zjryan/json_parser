@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from utils import exception_wrapper
+from utils import exception_wrapper, Stack
 
 PARSE_ELEMENTS = ['[', ']', '{', '}', ':']
 
@@ -90,6 +90,58 @@ def lexer(json_str):
         i += 1
 
     return tokens
+
+
+def parse_object(tokens):
+    s = Stack()
+    tokens_count = len(tokens)
+    n = 0
+    while n < tokens_count:
+        elem = tokens[n]
+        n += 1
+        if elem == ']':
+            l = []
+            while s.top() != '[':
+                top = s.pop()
+                l.insert(0, top)
+            s.pop()
+            s.push(l)
+            continue
+
+        if elem == '}':
+            l = []
+            while s.top() != '{':
+                top = s.pop()
+                l.insert(0, top)
+            s.pop()
+            if len(l) > 0 and not len(l) % 3 == 0 and not l.count(':') == len(l) / 3:
+                raise ValueError
+            d = {l[i]: l[i + 2] for i in range(0, len(l), 3)}
+            s.push(d)
+            continue
+
+        s.push(elem)
+
+    return s.top()
+
+
+@exception_wrapper
+def json_obj_from_tokens(tokens):
+    if len(tokens) == 1:
+        elem = tokens[0]
+        if elem in PARSE_ELEMENTS:
+            raise ValueError
+        return elem
+
+    r = parse_object(tokens)
+
+    return r
+
+
+def loads(json_str):
+    tokens = lexer(json_str)
+    r = json_obj_from_tokens(tokens)
+    return r
 
 
 def main():
